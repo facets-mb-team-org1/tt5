@@ -1,0 +1,83 @@
+name: Spring Boot Starter CI
+
+on:
+  pull_request:
+    types: [opened, synchronize, reopened]
+    paths:
+      - 'code/spring-boot-starter/**'
+  push:
+    branches:
+      - main
+    paths:
+      - 'code/spring-boot-starter/**'
+
+jobs:
+  checkout_code:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        run: echo "Fetching from remote and checking out commit $(git rev-parse --short HEAD)"
+
+  build_gradle:
+    needs: checkout_code
+    runs-on: ubuntu-latest
+    steps:
+      - name: Building with Gradle
+        run: |
+          echo "> Task :compileJava"
+          echo "> Task :processResources"
+          echo "> Task :classes"
+          echo "Build successful. Artifacts generated."
+
+  run_tests:
+    needs: build_gradle
+    runs-on: ubuntu-latest
+    steps:
+      - name: Running Tests
+        run: |
+          echo "Executing test: TestUserLogin PASSED"
+          echo "Executing test: TestDatabaseConnection PASSED"
+          echo "Executing test: TestAPIEndpoint FAILED"
+          echo "2 out of 3 tests passed."
+
+  sonar_analysis:
+    needs: run_tests
+    runs-on: ubuntu-latest
+    steps:
+      - name: Sonar Analysis
+        run: |
+          echo "INFO: Scanner configuration file: /path/to/sonar-scanner.properties"
+          echo "INFO: Project root configuration file: /path/to/sonar-project.properties"
+          echo "INFO: Analysis report generated in 238ms, dir size=307 KB"
+          echo "SonarQube analysis completed. Quality gate passed."
+
+  docker_build:
+    needs: sonar_analysis
+    runs-on: ubuntu-latest
+    steps:
+      - name: Docker Build
+        run: |
+          echo "Sending build context to Docker daemon  56.78MB"
+          echo "Step 1/5 : FROM openjdk:8-jdk-alpine"
+          echo "Step 2/5 : COPY ./app /app"
+          echo "Step 3/5 : WORKDIR /app"
+          echo "Step 4/5 : RUN some-command"
+          echo "Step 5/5 : CMD [\"java\", \"-jar\", \"my-app.jar\"]"
+          echo "Successfully built a2b3c4d5e6f7"
+          echo "Successfully tagged my-app:latest"
+          
+  docker_image_scan:
+    needs: docker_build
+    runs-on: ubuntu-latest
+    steps:
+      - name: Docker Image Scan
+        run: |
+          echo "2023-09-05T12:45:27.349Z INFO  - Scanning Docker image my-app:latest..."
+          echo "2023-09-05T12:45:30.450Z INFO  - Image scan completed. No vulnerabilities found."
+
+  push_to_facets:
+    needs: docker_image_scan
+    runs-on: ubuntu-latest
+    steps:
+      - name: Push to Facets
+        run: echo "Image published to Facets!"

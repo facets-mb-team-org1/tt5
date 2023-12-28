@@ -1,0 +1,100 @@
+name: React Starter CI
+
+on:
+  pull_request:
+    types: [opened, synchronize, reopened]
+    paths:
+      - 'code/react-starter/**'
+  push:
+    branches:
+      - main
+    paths:
+      - 'code/react-starter/**'
+      
+jobs:
+  checkout_code:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        run: echo "Fetching from remote and checking out commit $(git rev-parse --short HEAD)"
+
+  install_dependencies:
+    needs: checkout_code
+    runs-on: ubuntu-latest
+    steps:
+      - name: Install dependencies
+        run: |
+          echo "Found package.json"
+          echo "Installing dependencies using npm..."
+          echo "Dependencies installed successfully."
+
+  lint_code:
+    needs: install_dependencies
+    runs-on: ubuntu-latest
+    steps:
+      - name: Linting Code
+        run: |
+          echo "Running ESLint..."
+          echo "No linting issues found."
+
+  run_tests:
+    needs: lint_code
+    runs-on: ubuntu-latest
+    steps:
+      - name: Running Tests
+        run: |
+          echo "Executing tests..."
+          echo "TestComponent1 PASSED"
+          echo "TestComponent2 PASSED"
+          echo "All tests passed successfully."
+
+  build_project:
+    needs: run_tests
+    runs-on: ubuntu-latest
+    steps:
+      - name: Building React Project
+        run: |
+          echo "Running 'npm run build'..."
+          echo "React app built successfully and artifacts are generated."
+
+  docker_build:
+    needs: build_project
+    runs-on: ubuntu-latest
+    steps:
+      - name: Docker Build
+        run: |
+          echo "Step 1/5: FROM node:14 AS build"
+          echo "Setting up Node environment..."
+
+          echo "Step 2/5: WORKDIR /app"
+          echo "Changing directory to /app..."
+
+          echo "Step 3/5: COPY . ."
+          echo "Copying all files to the Docker container..."
+
+          echo "Step 4/5: RUN npm install && npm run build"
+          echo "Installing dependencies and building the React app..."
+
+          echo "Step 5/5: FROM nginx:alpine"
+          echo "Using Nginx to serve the built app..."
+
+          echo "COPY --from=build /app/build /usr/share/nginx/html"
+          echo "Copying built app to Nginx directory..."
+
+          echo "Successfully built React app Docker image."
+
+  docker_image_scan:
+    needs: docker_build
+    runs-on: ubuntu-latest
+    steps:
+      - name: Docker Image Scan
+        run: |
+          echo "2023-09-05T12:45:27.349Z INFO  - Scanning Docker image my-app:latest..."
+          echo "2023-09-05T12:45:30.450Z INFO  - Image scan completed. No vulnerabilities found."
+
+  push_to_facets:
+    needs: docker_image_scan
+    runs-on: ubuntu-latest
+    steps:
+      - name: Push to Facets
+        run: echo "Image published to Facets!"

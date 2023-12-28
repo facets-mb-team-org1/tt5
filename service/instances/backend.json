@@ -1,0 +1,49 @@
+{
+  "$schema": "https://facets-cloud.github.io/facets-schemas/schemas/service/service.schema.json",
+  "metadata": {
+    "name": "retool"
+  },
+  "disabled": false,
+  "flavor": "default",
+  "kind": "service",
+  "version": "0.1",
+  "spec": {
+    "type": "application",
+    "enable_host_anti_affinity": true,
+    "release": {
+      "build": {
+        "artifactory": "default",
+        "name": "demo_be"
+      },
+      "strategy": {
+        "type": "RollingUpdate",
+        "max_available": 1,
+        "max_unavailable": 0
+      }
+    },
+    "env": {
+      "ATLAS_URI": "${mongo.main-mongo.out.interfaces.cluster.connection_string}",
+      "TITLE": "${blueprint.self.variables.TITLE}"
+    },
+    "runtime": {
+      "health_checks": {
+        "liveness_url": "/api/employees",
+        "readiness_url": "/api/employees",
+        "port": "5200",
+        "start_up_time": 100,
+        "timeout": 100,
+        "period": 10
+      },
+      "ports": {
+        "http": {
+          "port": "5200",
+          "protocol": "tcp"
+        }
+      },
+      "size": {
+        "cpu": "200m",
+        "memory": "200Mi"
+      }
+    }
+  }
+}

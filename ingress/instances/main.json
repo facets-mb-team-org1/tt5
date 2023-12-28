@@ -1,0 +1,39 @@
+{
+  "$schema": "https://facets-cloud.github.io/facets-schemas/schemas/loadbalancer/loadbalancer.schema.json",
+  "flavor": "nlb_nginx",
+  "disabled": false,
+  "version": "0.1",
+  "kind": "ingress",
+  "metadata": {
+    "name": "main",
+    "annotations": {
+      "nginx.ingress.kubernetes.io/use-regex": "true"
+    }
+  },
+  "spec": {
+    "basicAuth": false,
+    "private": false,
+    "force_ssl_redirection": true,
+    "rules": {
+      "frontend": {
+        "comment": "front-end",
+        "domain_prefix": "",
+        "path": "/",
+        "port": "${service.frontend.out.interfaces.main.port}",
+        "service_name": "${service.ui.out.interfaces.main.name}"
+      },
+      "backend": {
+        "comment": "back-end",
+        "domain_prefix": "",
+        "path": "/api/employees/",
+        "port": "${service.backend.out.interfaces.http.port}",
+        "service_name": "${service.be.out.interfaces.http.name}"
+      }
+    }
+  },
+  "advanced": {
+    "gcp_alb": {
+      "enable_managed_certificates": false
+    }
+  }
+}
